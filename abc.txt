@@ -1,0 +1,73 @@
+// package main
+
+// import (
+// 	"encoding/json"
+// 	"fmt"
+// 	"net/http"
+// 	"time"
+
+// 	"github.com/gorilla/mux"
+// )
+
+// type Link struct {
+// 	Name   string `json:"name"`
+// 	Status string `json:"status"`
+// }
+
+// var links []Link
+
+// func getLinks(w http.ResponseWriter, r *http.Request) {
+// 	w.Header().Set("Content-Type", "application/json")
+// 	json.NewEncoder(w).Encode(links)
+// 	fmt.Println("getlink endpoint hit")
+// }
+
+// func DummyHandler(w http.ResponseWriter, r *http.Request) {
+// 	fmt.Println("Dummy Handler hit")
+// 	fmt.Fprint(w, "Dummy handler hit")
+// }
+
+// func getStatus(w http.ResponseWriter, r *http.Request) {
+
+// 	links := []string{
+// 		"http://google.com",
+// 		"https://www.errorfgh.com/",
+// 		"http://facebook.com",
+// 		"http://stackoverflow.com",
+// 		"https://www.error1589gh.com/",
+// 		"http://amazon.com",
+// 	}
+
+// 	c := make(chan string)
+// 	for _, link := range links {
+// 		go checkLink(link, c)
+// 	}
+// 	for l := range c {
+// 		go func(link string) {
+// 			time.Sleep(30 * time.Second)
+// 			checkLink(link, c)
+// 		}(l)
+
+// 	}
+// }
+
+// func checkLink(link string, c chan string) {
+// 	_, err := http.Get(link)
+// 	if err != nil {
+// 		fmt.Println(link, "Down!")
+// 		c <- link
+// 		return
+// 	}
+// 	fmt.Println(link, "Up!")
+// 	c <- link
+// }
+
+// func main() {
+// 	r := mux.NewRouter()
+// 	fmt.Println(" Server running .... on http://localhost:8081")
+// 	r.HandleFunc("/addsite", getLinks).Methods("POST")
+// 	r.HandleFunc("/site", getStatus).Methods("GET")
+// 	r.HandleFunc("/", DummyHandler).Methods("GET")
+// 	http.ListenAndServe(":8081", r)
+
+// }
