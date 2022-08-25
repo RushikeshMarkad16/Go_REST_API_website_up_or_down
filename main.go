@@ -4,9 +4,14 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
+	"time"
 
 	"github.com/gorilla/mux"
 )
+
+type Error struct {
+	ErrorMessage string `json:"error"`
+}
 
 var link_map = map[string]string{}
 
@@ -16,9 +21,14 @@ func getLinks(w http.ResponseWriter, r *http.Request) {
 	for key, value := range link_map {
 		fmt.Printf("[%s] = %s\n", key, value)
 	}
-
-	fmt.Fprint(w, link_map)
-
+	// fmt.Fprint(w, link_map)
+	jsonStr, err := json.Marshal(link_map)
+	if err != nil {
+		fmt.Printf("Error: %s", err.Error())
+	} else {
+		fmt.Println(string(jsonStr))
+		fmt.Fprint(w, string(jsonStr))
+	}
 }
 
 func PostLinks(w http.ResponseWriter, r *http.Request) {
@@ -40,14 +50,20 @@ func PostLinks(w http.ResponseWriter, r *http.Request) {
 func getLinks_by_id(w http.ResponseWriter, r *http.Request) {
 	params := mux.Vars(r)
 	a := "https://" + params["link"]
-	_, err := http.Get(a)
-	if err != nil {
-		fmt.Println(params["link"], " : Down")
-		fmt.Fprint(w, params["link"], " : Down")
-	} else {
-		fmt.Println(params["link"], " : Up")
-		fmt.Fprint(w, params["link"], " : Up")
+
+	_, isPresent := link_map[a]
+	if !isPresent {
+		errMsg := Error{
+			ErrorMessage: "Webiste not presnt in the database",
+		}
+		json.NewEncoder(w).Encode(errMsg)
+		return
 	}
+
+	responseMap := make(map[string]string)
+	responseMap[a] = link_map[a]
+	json.NewEncoder(w).Encode(responseMap)
+
 }
 
 func main() {
@@ -70,13 +86,11 @@ func checkStatus() {
 				link_map[key] = "Down"
 				continue
 			}
-
 			if resp.StatusCode == 200 {
 				fmt.Println("Successful")
 				link_map[key] = "Up"
 			}
-
 		}
+		time.Sleep(1 * time.Minute)
 	}
-
 }
